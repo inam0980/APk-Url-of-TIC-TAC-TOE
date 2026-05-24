@@ -15,14 +15,31 @@ function formatBytes(bytes) {
   return size.toFixed(2) + " " + units[i];
 }
 
-fetch(APK_URL, { method: "HEAD" })
-  .then((res) => {
-    const len = res.headers.get("Content-Length");
-    fileSizeEl.textContent = len ? formatBytes(parseInt(len, 10)) : "Unknown";
-  })
-  .catch(() => {
+async function loadFileSize() {
+  try {
+    const headRes = await fetch(APK_URL, { method: "HEAD" });
+    const len = headRes.headers.get("Content-Length");
+    if (len && parseInt(len, 10) > 0) {
+      fileSizeEl.textContent = formatBytes(parseInt(len, 10));
+      return;
+    }
+  } catch (e) {}
+
+  try {
+    const getRes = await fetch(APK_URL);
+    const len = getRes.headers.get("Content-Length");
+    if (len && parseInt(len, 10) > 0) {
+      fileSizeEl.textContent = formatBytes(parseInt(len, 10));
+      return;
+    }
+    const blob = await getRes.blob();
+    fileSizeEl.textContent = blob.size ? formatBytes(blob.size) : "Unknown";
+  } catch (e) {
     fileSizeEl.textContent = "Unknown";
-  });
+  }
+}
+
+loadFileSize();
 
 btn.addEventListener("click", () => {
   btn.classList.add("downloading");
