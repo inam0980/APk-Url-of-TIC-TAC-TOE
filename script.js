@@ -3,6 +3,10 @@ const fileSizeEl = document.getElementById("fileSize");
 const btn = document.getElementById("downloadBtn");
 const btnText = btn.querySelector("span");
 
+const cacheBuster = "v=" + Date.now();
+const APK_URL_FRESH = APK_URL + "?" + cacheBuster;
+btn.href = APK_URL_FRESH;
+
 function formatBytes(bytes) {
   if (!bytes && bytes !== 0) return "Unknown";
   const units = ["B", "KB", "MB", "GB"];
@@ -17,7 +21,7 @@ function formatBytes(bytes) {
 
 async function loadFileSize() {
   try {
-    const headRes = await fetch(APK_URL, { method: "HEAD" });
+    const headRes = await fetch(APK_URL_FRESH, { method: "HEAD", cache: "no-store" });
     const len = headRes.headers.get("Content-Length");
     if (len && parseInt(len, 10) > 0) {
       fileSizeEl.textContent = formatBytes(parseInt(len, 10));
@@ -26,7 +30,7 @@ async function loadFileSize() {
   } catch (e) {}
 
   try {
-    const getRes = await fetch(APK_URL);
+    const getRes = await fetch(APK_URL_FRESH, { cache: "no-store" });
     const len = getRes.headers.get("Content-Length");
     if (len && parseInt(len, 10) > 0) {
       fileSizeEl.textContent = formatBytes(parseInt(len, 10));
